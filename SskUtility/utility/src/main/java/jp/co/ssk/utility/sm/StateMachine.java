@@ -12,6 +12,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.co.ssk.utility.Handler;
 import jp.co.ssk.utility.SynchronousCallback;
@@ -37,6 +38,7 @@ public abstract class StateMachine {
     private State mDestState;
     @Nullable
     private Message mCurrentMessage;
+    private AtomicBoolean mDbg = new AtomicBoolean(false);
 
     protected StateMachine() {
         this(null);
@@ -44,7 +46,7 @@ public abstract class StateMachine {
 
     protected StateMachine(@Nullable Looper looper) {
         if (null == looper) {
-            HandlerThread thread = new HandlerThread(getName());
+            HandlerThread thread = new HandlerThread(getName() + "-Thread");
             thread.start();
             looper = thread.getLooper();
         }
@@ -198,6 +200,10 @@ public abstract class StateMachine {
         }
     }
 
+    protected void setDbg(boolean dbg) {
+        mDbg.set(dbg);
+    }
+
     @NonNull
     private StateInfo _addState(@NonNull State state, @Nullable State parent) {
         if (mStateInfoMap.containsKey(state)) {
@@ -240,13 +246,13 @@ public abstract class StateMachine {
             if (foundRootState != null && foundRootState == tempStateInfo.state) {
                 break;
             }
-            Log.i(getName(), "invokeExitMethods: " + tempStateInfo.state.getName());
+            log("invokeExitMethods: " + tempStateInfo.state.getName());
             tempStateInfo.state.exit();
             tempStateInfo.active = false;
             mStateStack.pollFirst();
         }
         for (StateInfo stateInfo : destStateDeque) {
-            Log.i(getName(), "invokeEnterMethods: " + stateInfo.state.getName());
+            log("invokeEnterMethods: " + stateInfo.state.getName());
             stateInfo.state.enter();
             stateInfo.active = true;
             mStateStack.offerFirst(stateInfo);
@@ -256,7 +262,7 @@ public abstract class StateMachine {
 
     private void _processMessage(Message msg) {
         for (StateInfo stateInfo : mStateStack) {
-            Log.i(getName(), "processMsg: " + stateInfo.state.getName() + String.format(Locale.US, " msg.what=0x%08x", msg.what));
+            log("processMsg: " + stateInfo.state.getName() + String.format(Locale.US, " what=0x%08x", msg.what));
             if (stateInfo.state.processMessage(msg)) {
                 break;
             }
@@ -292,6 +298,10 @@ public abstract class StateMachine {
     @NonNull
     private String getName() {
         return getClass().getSimpleName();
+    }
+
+    private void log(@NonNull String log) {
+        if (mDbg.get()) Log.d(getName(), log);
     }
 
     private static class StateInfo {

@@ -79,6 +79,7 @@ final class SampleStateMachine extends StateMachine {
         addState(mDisconnecting3State, mDisconnectingState);
 
         mSampleState = SampleState.UnknownState;
+        setDbg(true);
         setInitialState(mInactiveState);
         start();
     }
