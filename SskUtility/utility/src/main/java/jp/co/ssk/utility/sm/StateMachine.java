@@ -200,6 +200,10 @@ public abstract class StateMachine {
         }
     }
 
+    protected void outputProcessMessageLog(@NonNull String currentStateName, @NonNull Message msg) {
+        log("processMessage: " + currentStateName + String.format(Locale.US, " what=0x%08x", msg.what));
+    }
+
     protected void setDbg(boolean dbg) {
         mDbg.set(dbg);
     }
@@ -262,7 +266,7 @@ public abstract class StateMachine {
 
     private void _processMessage(Message msg) {
         for (StateInfo stateInfo : mStateStack) {
-            log("processMsg: " + stateInfo.state.getName() + String.format(Locale.US, " what=0x%08x", msg.what));
+            outputProcessMessageLog(stateInfo.state.getName(), msg);
             if (stateInfo.state.processMessage(msg)) {
                 break;
             }
@@ -296,12 +300,12 @@ public abstract class StateMachine {
     }
 
     @NonNull
-    private String getName() {
+    protected String getName() {
         return getClass().getSimpleName();
     }
 
     private void log(@NonNull String log) {
-        if (mDbg.get()) Log.d(getName(), log);
+        if (mDbg.get()) Log.i(getName(), log);
     }
 
     private static class StateInfo {

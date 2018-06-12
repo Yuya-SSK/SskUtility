@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import jp.co.ssk.utility.SynchronousCallback;
 import jp.co.ssk.utility.Type;
@@ -18,13 +19,10 @@ final class SampleStateMachine extends StateMachine {
         default void onStateChanged(@NonNull SampleState sampleState) {}
     }
 
-    private static final int EVT_BASE = 0x00000000;
-    private static final int EVT_LOCAL_BASE = 0xff000000;
-
-    private static final int EVT_ACTIVATE = EVT_BASE + 0x00000001;
-    private static final int EVT_DEACTIVATE = EVT_BASE + 0x00000002;
-    private static final int EVT_CONNECT = EVT_BASE + 0x00000003;
-    private static final int EVT_DISCONNECT = EVT_BASE + 0x00000004;
+    private enum Event {
+        Activate, Deactivate, Connect, Disconnect,
+        Conn1Comp, Conn2Comp, Conn3Comp,
+    }
 
     private final State mInactiveState = new InactiveState();
     private final State mActiveState = new ActiveState();
@@ -85,19 +83,19 @@ final class SampleStateMachine extends StateMachine {
     }
 
     public void activate() {
-        sendMessage(EVT_ACTIVATE);
+        sendMessage(Event.Activate.ordinal());
     }
 
     public void deactivate() {
-        sendMessage(EVT_DEACTIVATE);
+        sendMessage(Event.Deactivate.ordinal());
     }
 
     public void connect() {
-        sendMessage(EVT_CONNECT);
+        sendMessage(Event.Connect.ordinal());
     }
 
     public void disconnect() {
-        sendMessage(EVT_DISCONNECT);
+        sendMessage(Event.Disconnect.ordinal());
     }
 
     @NonNull
@@ -115,6 +113,11 @@ final class SampleStateMachine extends StateMachine {
             ret = Type.cast(callback.getResult());
         }
         return ret;
+    }
+
+    @Override
+    protected void outputProcessMessageLog(@NonNull String currentStateName, @NonNull Message msg) {
+        Log.i(getName(), "processMessage: " + currentStateName + " " + Event.values()[msg.what]);
     }
 
     private void _setSampleState(@NonNull SampleState sampleState) {
@@ -137,8 +140,8 @@ final class SampleStateMachine extends StateMachine {
         @Override
         public boolean processMessage(@NonNull Message msg) {
             boolean ret = StateMachine.NOT_HANDLED;
-            switch (msg.what) {
-                case EVT_ACTIVATE:
+            switch (Event.values()[msg.what]) {
+                case Activate:
                     ret = StateMachine.HANDLED;
                     transitionTo(mUnconnected1State);
                     break;
@@ -155,8 +158,8 @@ final class SampleStateMachine extends StateMachine {
         @Override
         public boolean processMessage(@NonNull Message msg) {
             boolean ret = StateMachine.NOT_HANDLED;
-            switch (msg.what) {
-                case EVT_DEACTIVATE:
+            switch (Event.values()[msg.what]) {
+                case Deactivate:
                     ret = StateMachine.HANDLED;
                     transitionTo(mInactiveState);
                     break;
@@ -173,8 +176,8 @@ final class SampleStateMachine extends StateMachine {
         @Override
         public boolean processMessage(@NonNull Message msg) {
             boolean ret = StateMachine.NOT_HANDLED;
-            switch (msg.what) {
-                case EVT_CONNECT:
+            switch (Event.values()[msg.what]) {
+                case Connect:
                     ret = StateMachine.HANDLED;
                     transitionTo(mConnecting1State);
                     break;
@@ -228,21 +231,20 @@ final class SampleStateMachine extends StateMachine {
     }
 
     private class Connecting1State extends State {
-        private static final int EVT_LOCAL_1 = EVT_LOCAL_BASE + 0x01;
         @Override
         public void enter() {
             _setSampleState(SampleState.Connecting1State);
-            sendMessageDelayed(EVT_LOCAL_1, 1000);
+            sendMessageDelayed(Event.Conn1Comp.ordinal(), 1000);
         }
         @Override
         public void exit() {
-            removeMessage(EVT_LOCAL_1);
+            removeMessage(Event.Conn1Comp.ordinal());
         }
         @Override
         public boolean processMessage(@NonNull Message msg) {
             boolean ret = StateMachine.NOT_HANDLED;
-            switch (msg.what) {
-                case EVT_LOCAL_1:
+            switch (Event.values()[msg.what]) {
+                case Conn1Comp:
                     ret = StateMachine.HANDLED;
                     transitionTo(mConnecting2State);
                     break;
@@ -252,21 +254,20 @@ final class SampleStateMachine extends StateMachine {
     }
 
     private class Connecting2State extends State {
-        private static final int EVT_LOCAL_1 = EVT_LOCAL_BASE + 0x01;
         @Override
         public void enter() {
             _setSampleState(SampleState.Connecting2State);
-            sendMessageDelayed(EVT_LOCAL_1, 1000);
+            sendMessageDelayed(Event.Conn2Comp.ordinal(), 1000);
         }
         @Override
         public void exit() {
-            removeMessage(EVT_LOCAL_1);
+            removeMessage(Event.Conn2Comp.ordinal());
         }
         @Override
         public boolean processMessage(@NonNull Message msg) {
             boolean ret = StateMachine.NOT_HANDLED;
-            switch (msg.what) {
-                case EVT_LOCAL_1:
+            switch (Event.values()[msg.what]) {
+                case Conn2Comp:
                     ret = StateMachine.HANDLED;
                     transitionTo(mConnecting3State);
                     break;
@@ -276,21 +277,20 @@ final class SampleStateMachine extends StateMachine {
     }
 
     private class Connecting3State extends State {
-        private static final int EVT_LOCAL_1 = EVT_LOCAL_BASE + 0x01;
         @Override
         public void enter() {
             _setSampleState(SampleState.Connecting3State);
-            sendMessageDelayed(EVT_LOCAL_1, 1000);
+            sendMessageDelayed(Event.Conn3Comp.ordinal(), 1000);
         }
         @Override
         public void exit() {
-            removeMessage(EVT_LOCAL_1);
+            removeMessage(Event.Conn3Comp.ordinal());
         }
         @Override
         public boolean processMessage(@NonNull Message msg) {
             boolean ret = StateMachine.NOT_HANDLED;
-            switch (msg.what) {
-                case EVT_LOCAL_1:
+            switch (Event.values()[msg.what]) {
+                case Conn3Comp:
                     ret = StateMachine.HANDLED;
                     transitionTo(mConnected3State);
                     break;
