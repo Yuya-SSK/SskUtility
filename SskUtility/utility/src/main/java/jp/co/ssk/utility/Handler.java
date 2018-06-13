@@ -135,6 +135,7 @@ public class Handler {
     protected void handleMessage(@NonNull Message msg) {
     }
 
+    @NonNull
     private Message obtainMessage(int what, int arg1) {
         return Message.obtain(mHandler, what, arg1, 0);
     }
