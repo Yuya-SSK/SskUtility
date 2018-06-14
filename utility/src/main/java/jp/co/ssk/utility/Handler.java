@@ -107,11 +107,11 @@ public class Handler {
         mHandler.sendMessageAtFrontOfQueue(mHandler.obtainMessage(what, obj));
     }
 
-    public boolean hasMessage(int what) {
+    public boolean hasMessages(int what) {
         return mHandler.hasMessages(what);
     }
 
-    public void removeMessage(int what) {
+    public void removeMessages(int what) {
         mHandler.removeMessages(what);
     }
 
