@@ -1,11 +1,19 @@
 package jp.co.ssk.utility;
 
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class Handler extends android.os.Handler {
+
+    public Handler() {
+    }
+
+    public Handler(Looper looper) {
+        super(looper);
+    }
 
     public boolean isCurrentThread() {
         return Thread.currentThread() == getLooper().getThread();
@@ -29,6 +37,34 @@ public class Handler extends android.os.Handler {
 
     public void sendMessage(int what, @Nullable Object obj) {
         sendMessage(obtainMessage(what, obj));
+    }
+
+    public void sendMessageSyncIf(@NonNull Message msg) {
+        if (isCurrentThread()) {
+            handleMessage(msg);
+        } else {
+            sendMessage(msg);
+        }
+    }
+
+    public void sendMessageSyncIf(int what) {
+        sendMessageSyncIf(obtainMessage(what));
+    }
+
+    public void sendMessageSyncIf(int what, int arg1) {
+        sendMessageSyncIf(obtainMessage(what, arg1));
+    }
+
+    public void sendMessageSyncIf(int what, int arg1, int arg2) {
+        sendMessageSyncIf(obtainMessage(what, arg1, arg2));
+    }
+
+    public void sendMessageSyncIf(int what, int arg1, int arg2, @Nullable Object obj) {
+        sendMessageSyncIf(obtainMessage(what, arg1, arg2, obj));
+    }
+
+    public void sendMessageSyncIf(int what, @Nullable Object obj) {
+        sendMessageSyncIf(obtainMessage(what, obj));
     }
 
     public void sendMessageDelayed(int what, long delayMillis) {
