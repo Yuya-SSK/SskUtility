@@ -8,12 +8,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @SuppressWarnings("unused")
-public final class SynchronousCallback {
+public final class SynchronousCallback<T> {
     private final static int DEFAULT_TIMEOUT = 10 * 1000;
     @NonNull
     private final CountDownLatch mLock;
     @Nullable
-    private Object mResult;
+    private T mResult;
 
     public SynchronousCallback() {
         mLock = new CountDownLatch(1);
@@ -39,11 +39,11 @@ public final class SynchronousCallback {
     }
 
     @Nullable
-    public Object getResult() {
+    public T getResult() {
         return mResult;
     }
 
-    public void setResult(@Nullable Object result) {
+    public void setResult(@Nullable T result) {
         mResult = result;
     }
 }
